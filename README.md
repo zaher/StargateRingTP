@@ -5,3 +5,8 @@ Idea is based on idea "APN Ring Transporters (OSGrid/OpenSim) by Spectre Draconi
 I rebuilt it from scratch the code also i am working on mesh too.
 
 the gate rez a ring, sent message to it contain key of avi, each ring listen to channel, will teleport an avi by that key
+
+
+### Syntax ###
+
+I use /*  or  //*  as documentation comment, normal comment is not a documentation, my miniedit highlight it

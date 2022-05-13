@@ -24,7 +24,7 @@ integer channel_private_number = 1;
 integer glow_face = 2;
 integer ring_count = 5; //* amount of rings to rez and teleport
 float ring_total_time = 5;
-float sensor_range = 2;
+float sensor_range = 5;
 string ring_start_sound = "289b4a8d-5a9a-4cc3-8077-3d3e5b08bb8c";
 key ring_sound = ""; //* UUID of ring sound
 
@@ -33,8 +33,8 @@ list cmd_list = [ "<--", "Refresh", "-->" ]; //* general navigation
 list gates_name_list = []; //* gate rings list
 list gates_id_list = []; //* gate rings keys list
 list avatars_list = []; //* hold temp list of avatar keys for teleporting
-key ring_recv_id; //* selected dest object ID
-integer temp;
+key dest_id; //* selected dest object ID
+integer temp = 0;
 
 integer dialog_channel;
 integer dialog_listen_id; //* dynamicly generated menu channel
@@ -53,8 +53,8 @@ listList(list l)
 
 list getCommands(integer page)
 {
-    llOwnerSay("page " + (string)page);
-    listList(gates_name_list);
+    //llOwnerSay("page " + (string)page);
+    //listList(gates_name_list);
     integer length = llGetListLength(gates_name_list);
     if (length >= 9)
     {
@@ -72,10 +72,34 @@ showDialog(key toucher_id) {
     dialog_listen_id = llListen(dialog_channel, "", toucher_id, "");
 }
 
-sendCommand(string cmd, string params) {
-    if (params != "")
-        cmd = cmd + ";" + params;
-    llRegionSay(channel_number, cmd);
+sendCommandTo(key id, string cmd, list params)
+{
+    integer len = llGetListLength(params);
+    integer i;
+    for( i = 0; i < len; i++ )
+    {
+        cmd = cmd + ";" + llList2String(params, i);
+    }
+    if (id)
+        llRegionSayTo(id, channel_number, cmd);
+    else
+        llRegionSay(channel_number, cmd);
+}
+
+sendCommand(string cmd, list params)
+{
+    sendCommandTo(NULL_KEY, cmd, params);
+}
+
+sendLocalCommand(string cmd, list params)
+{
+    integer len = llGetListLength(params);
+    integer i;
+    for( i = 0; i < len; i++ )
+    {
+        cmd = cmd + ";" + llList2String(params, i);
+    }
+    llSay(channel_number, cmd);
 }
 
 addGate(key id)
@@ -88,7 +112,7 @@ addGate(key id)
             name = llList2String(llGetObjectDetails(id,[OBJECT_NAME]), 0);
         if (name == "")
             llOwnerSay("This id have no name: " + (string)id);
-        llOwnerSay("add: " + name);
+        //llOwnerSay("add: " + name);
         gates_name_list += name;
     }
 }
@@ -97,12 +121,12 @@ removeGate(key id){
     if (llListFindList(gates_id_list,[ id ]) == -1)
     {
         list tempList;
-        integer index = llListFindList(avatars_list,[id]);
+        integer index = llListFindList(gates_id_list,[id]);
         if (index != -1)
         {
-            tempList = llDeleteSubList(avatars_list,index,index);
+            tempList = llDeleteSubList(gates_id_list,index,index);
         }
-        avatars_list = tempList;
+        gates_id_list = tempList;
     }
 }
 
@@ -118,37 +142,27 @@ start()
             n = -ringNumber;
         else
             n = ringNumber;
-        llRezObject("ring", pos, ZERO_VECTOR, ZERO_ROTATION, n);
+        llRezObject("Ring", pos, ZERO_VECTOR, ZERO_ROTATION, n);
     }
+}
+
+teleport(key id, integer index)
+{
+    llOwnerSay("hmmm");
+    if (index >= llGetListLength(avatars_list))
+        llOwnerSay("out of index"); //* but we will send teleport command to make ring fall down
+    key agent = llList2String(avatars_list, index - 1); //* -1 based on 0 while ring numbers is based on 1
+    vector dest = llList2Vector(llGetObjectDetails(dest_id, [OBJECT_POS]), 0);
+    dest = dest + <0,0,0.8>;
+    sendCommandTo(id, "teleport", [(string)(index) , llGetRegionName() , (string)dest , "<1,1,1>", (string)agent]); //* send mesage to incoming
 }
 
 finish()
 {
     llSetLinkAlpha(2,1.0,ALL_SIDES); //* show main ring base
     llSetPrimitiveParams([PRIM_GLOW, glow_face, 0.00, PRIM_FULLBRIGHT, glow_face, FALSE]); //* deactivate glow
-    ring_recv_id = NULL_KEY;
-    avatars_list = [];
-}
-
-teleport(vector dest)
-{
-    temp = 0; //not temp
-
-    llRegionSayTo(ring_recv_id, channel_number, "activate"); //* send mesage to incoming
-    //llSleep(ring_total_time / 5);
-
-    dest = dest + <0,0,0.8>;
-    integer i;
-    integer c = llGetListLength(avatars_list);
-    if (c > ring_count)
-        c = ring_count;
-
-    for(i=0; i < c; i++)
-    {
-        string agent = llStringTrim(llList2String(avatars_list, i), STRING_TRIM_HEAD);
-        llSay(0, "teleporting: " + (string)agent);
-        llSay(channel_number, "teleport:" + (string)(i+1) + ";"+llGetRegionName() + ";" + (string)dest + ";<1,1,1>;" + agent); //* send mesage to incoming
-    }
+    dest_id = NULL_KEY;
+    //avatars_list = []; nop
 }
 
 clear(){
@@ -165,65 +179,43 @@ default
         }
     }
 
-    collision_start(integer num)
-    {
-/*        key tempKey = llDetectedKey(0);
-        avatars_list += tempKey;*/
-
-/*        list tempList = llGetObjectDetails(tempKey,[OBJECT_CREATOR]); idk
-        if (llList2Key(tempList,0) == NULL_KEY) {
-            avatars_list += tempKey;
-            llSay(0, "added:" + (string)tempKey);
-        }
-        */
-    }
-
-    collision_end(integer num)
-    {
-/*        if (!ring_recv_id) {
-            list avList; //* hold list of AVs detected
-            string tempKey = (string)llDetectedKey(0);
-            integer index = llListFindList(avatars_list,[tempKey]);
-            if (index != -1)
-            {
-                avList = llDeleteSubList(avatars_list,index,index);
-            }
-            avatars_list = avList;
-        } */
-    }
-
     state_entry()
     {
         if (channel_number == 0)
           channel_number = (((integer)("0x"+llGetSubString((string)llGetOwner(),-8,-1)) & 0x3FFFFFFF) ^ 0xBFFFFFFF ) + channel_private_number;
         dialog_channel = -1 - (integer)("0x" + llGetSubString( (string) llGetKey(), -7, -1) );
         llListen(channel_number,"","","");
-
-        clear();
-        llSay(channel_number, "update");
+        sendCommand("update", []);
     }
 
     state_exit()
     {
-        llSay(channel_number, "remove");
+        sendCommand("remove", []);
     }
 
     touch_start(integer num_detected)
     {
-        llSay(channel_number, "update");
+        sendCommand("update", []);
         showDialog(llDetectedKey(0));
     }
 
     sensor( integer number_detected )
     {
-        integer i;
-        avatars_list = [];
-        for( i = 0; i < number_detected; i++ ){
-            key k = llDetectedKey(i);
-            avatars_list += (string)k;
+        if (number_detected > 0)
+        {
+            integer i;
+            avatars_list = [];
+            for( i = 0; i < number_detected; i++ ){
+                key k = llDetectedKey(i);
+                avatars_list += k;
+            }
+
+            start();
+            temp = 0; //not temp
+            sendCommandTo(dest_id, "activate", []); //* send mesage to incoming
+            llSleep(ring_total_time / 2);
         }
-        teleport(llList2Vector(llGetObjectDetails(ring_recv_id, [OBJECT_POS]), 0));
-        //finish();
+        llSay(0, "Nothing to teleport");
     }
 
     no_sensor(){
@@ -244,9 +236,15 @@ default
             string cmd = llList2String(cmdList,0);
             cmdList = llDeleteSubList(cmdList, 0, 0);
 
+            //* rings
+            if (cmd == "ready") { //* ring ready to teleport
+                if (dest_id)
+                    teleport(id, llList2Integer(cmdList, 0));
+            }
+            //* gates
             if (cmd == "update") {
                 addGate(id);
-                llSay(channel_number, "add"); //* send pong reply (ring sync)
+                sendCommand("add", []); //* send pong reply (ring sync)
             }
             else if (message == "add")
             {
@@ -260,8 +258,7 @@ default
             {
                 if (id != llGetKey())
                 { //*not self s
-                    ring_recv_id = NULL_KEY;
-                    llSetLinkAlpha(2,0.0,ALL_SIDES); //* hide main ring base
+                    dest_id = NULL_KEY;
                     llSetPrimitiveParams([PRIM_GLOW, glow_face, 0.20, PRIM_FULLBRIGHT, glow_face, TRUE]); //* glow face
                     llTriggerSound(ring_sound, 1.0);
                     temp = 1;
@@ -290,18 +287,15 @@ default
             }
             else if (message == "Refresh") {
                 clear();
-                llSay(channel_number, "update");
+                sendCommand("update", []);
                 finish();
             }
             else if (button_index != -1)
             {
-                ring_recv_id = (key)llList2String(gates_id_list, button_index); //* id of destination
-                llSetLinkAlpha(2,0.0,ALL_SIDES); //* hide main ring base
+                dest_id = (key)llList2String(gates_id_list, button_index); //* id of destination
                 llSetPrimitiveParams([PRIM_GLOW, glow_face, 0.20, PRIM_FULLBRIGHT, glow_face, TRUE]); //* activate glow
                 llTriggerSound(ring_sound, 1.0);
                 temp = 0;
-                start();
-                llSleep(ring_total_time / 2);
                 llSensor("", NULL_KEY, AGENT, sensor_range, PI);
                 llSetTimerEvent(ring_total_time);
            }
