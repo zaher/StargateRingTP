@@ -124,7 +124,6 @@ default
 
     listen (integer channel, string name, key id, string message)
     {
-        llOwnerSay("listen: "+ message);
         if (channel == channel_number)
         {
             if (ring_number > 0)
@@ -134,10 +133,8 @@ default
                 cmdList = llDeleteSubList(cmdList, 0, 0);
                 if (cmd == "teleport")
                 {
-                    llOwnerSay("Listen ring number: " + (string)ring_number);
                     if (temp == 0) {
                         integer number = llList2Integer(cmdList, 0);
-                        llOwnerSay("Listen number: " + (string)ring_number);
                         if (number == ring_number) {
                             string toRegion = llList2String(cmdList, 1);
                             vector toPos = llList2Vector(cmdList, 2 );
