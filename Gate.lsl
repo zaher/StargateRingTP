@@ -149,7 +149,8 @@ start()
 teleport(key id, integer index)
 {
 /*    if (index >= llGetListLength(avatars_list))
-        llOwnerSay("out of index"); //* but we will send teleport command to make ring fall down*/
+        llOwnerSay("out of index"); //* but we will send teleport command to make ring fall down
+*/
     key agent = llList2String(avatars_list, index - 1); //* -1 based on 0 while ring numbers is based on 1
     vector dest = llList2Vector(llGetObjectDetails(dest_id, [OBJECT_POS]), 0);
     dest = dest + <0,0,0.8>;

@@ -28,6 +28,11 @@ vector start_pos; //* starting pos
 integer ring_number = 0; //* ring number
 integer temp = 0; //* if enabled do not process teleports
 
+string toRegion;
+vector toPos;
+vector toLookAt;
+key agent;
+
 sendCommandTo(key id, string cmd, list params)
 {
     integer len = llGetListLength(params);
@@ -119,7 +124,16 @@ default
 
     collision_start(integer num)
     {
-        llSay(0, llDetectedKey(0));
+        //llSay(0, llDetectedKey(0));
+    }
+
+    run_time_permissions(integer perm)
+    {
+        if(PERMISSION_TELEPORT & perm)
+        {
+            osTeleportAgent(agent, toPos, toLookAt);
+        }
+        finish();
     }
 
     listen (integer channel, string name, key id, string message)
@@ -136,14 +150,22 @@ default
                     if (temp == 0) {
                         integer number = llList2Integer(cmdList, 0);
                         if (number == ring_number) {
-                            string toRegion = llList2String(cmdList, 1);
-                            vector toPos = llList2Vector(cmdList, 2 );
-                            vector toLookat = llList2Vector(cmdList, 3);
-                            key k = llList2Key(cmdList, 4);
-                            llOwnerSay("teleport: " + (string)k);
-                            //osTeleportAgent(k, toRegion, toPos, toLookat );
-                            osTeleportAgent(k, toPos, toLookat);
-                            finish();
+                            agent = llList2Key(cmdList, 4);
+                            if (agent) {
+                                llOwnerSay("teleport: " + (string)agent);
+                                toRegion = llList2String(cmdList, 1);
+                                toPos = llList2Vector(cmdList, 2 );
+                                toLookAt = llList2Vector(cmdList, 3);
+                                if (agent == llGetOwner()) {
+                                    osTeleportAgent(agent, toPos, toLookAt);
+                                    finish();
+                                } else
+                                    llRequestPermissions(agent, PERMISSION_TELEPORT);
+                                //osTeleportAgent(agent, toPos, toLookAt);
+                                //osTeleportAgent(agent, toRegion, toPos, toLookAt );
+                            }
+                            else
+                                finish();
                         }
                     }
                 }
