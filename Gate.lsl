@@ -3,11 +3,10 @@
     @description:
 
     @author: Zai Dium
-    @owner: Zai Dium
-    @update: 2022-02-16
-    @revision: 0.1
-    @localcopy: ""
-    @license: ?
+    @updated: 2022-05-18
+    @revision: 5
+    @localfile: ?defaultpath\Stargate\?name
+    @license: MIT
 
     @ref:
 
@@ -188,9 +187,9 @@ default
         sendCommand("update", []);
     }
 
-    state_exit()
+    on_rez(integer start_param )
     {
-        sendCommand("remove", []);
+        llResetScript();
     }
 
     touch_start(integer num_detected)
@@ -229,12 +228,17 @@ default
         finish();
     }
 
+    object_rez(key id)
+    {
+         sendCommandTo(id, "setup", []);
+    }
+
     listen (integer channel, string name, key id, string message)
     {
         if (channel == channel_number)
         {
             list cmdList = llParseString2List(message,[";"],[""]);
-            string cmd = llList2String(cmdList,0);
+            string cmd = llList2String(cmdList, 0);
             cmdList = llDeleteSubList(cmdList, 0, 0);
 
             //* rings

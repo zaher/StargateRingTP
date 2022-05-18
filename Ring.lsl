@@ -3,10 +3,10 @@
     @description:
 
     @author: Zai Dium
-    @update: 2022-02-16
-    @revision: 0.1
-    @localcopy: ""
-    @license: ?
+    @updated: 2022-05-18
+    @revision: 5
+    @localfile: ?defaultpath\Stargate\?basename
+    @license: MIT
 
     @ref:
 
