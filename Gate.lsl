@@ -3,10 +3,9 @@
     @description:
 
     @author: Zai Dium
-    @updated: "2022-05-27 21:40:18"
-    @revision: 74
+    @updated: "2022-05-27 22:33:46"
+    @revision: 77
     @localfile: ?defaultpath\Stargate\?@name.lsl
-    @localfile: ?defaultpath\Stargate\?@name-?filedatetime.lsl
     @license: MIT
 
     @ref:
@@ -34,7 +33,6 @@ list gates_name_list = []; //* gate rings list
 list gates_id_list = []; //* gate rings keys list
 list avatars_list = []; //* hold temp list of avatar keys for teleporting
 key dest_id; //* selected dest object ID
-integer temp = 0;
 
 integer dialog_channel;
 integer dialog_listen_id; //* dynamicly generated menu channel
@@ -147,7 +145,7 @@ integer getPrimNumber(string name)
 
 integer nInternalRing = -1;
 
-start()
+start(integer number_detected)
 {
     llSetLinkPrimitiveParams(nInternalRing, [PRIM_OMEGA, llRot2Up(llGetLocalRot()), PI, 1.0]);
 
@@ -157,7 +155,7 @@ start()
     for (ringNumber = 1; ringNumber <= ring_count; ringNumber++) {
         llSleep(ring_total_time / 10);
         integer n;
-        if (temp)
+        if (ringNumber > number_detected)
             n = -ringNumber;
         else
             n = ringNumber;
@@ -241,8 +239,7 @@ default
                 avatars_list += k;
             }
 
-            start();
-            temp = 0; //not temp
+            start(number_detected);
             sendCommandTo(dest_id, "activate", []); //* send mesage to incoming
             llSleep(ring_total_time / 2);
         }
@@ -298,8 +295,7 @@ default
                     dest_id = NULL_KEY;
                     llSetPrimitiveParams([PRIM_GLOW, glow_face, 0.20, PRIM_FULLBRIGHT, glow_face, TRUE]); //* glow face
                     llTriggerSound(ring_sound, 1.0);
-                    temp = 1;
-                    start();
+                    start(0);
                 }
             }
         }
@@ -331,7 +327,6 @@ default
                 dest_id = (key)llList2String(gates_id_list, button_index); //* id of destination
                 llSetPrimitiveParams([PRIM_GLOW, glow_face, 0.20, PRIM_FULLBRIGHT, glow_face, TRUE]); //* activate glow
                 llTriggerSound(ring_sound, 1.0);
-                temp = 0;
                 llSensor("", NULL_KEY, AGENT, sensor_range, PI);
                 llSetTimerEvent(ring_total_time);
            }

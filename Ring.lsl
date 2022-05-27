@@ -3,8 +3,8 @@
     @description:
 
     @author: Zai Dium
-    @updated: "2022-05-27 22:05:06"
-    @revision: 32
+    @updated: "2022-05-27 22:50:33"
+    @revision: 56
     @localfile: ?defaultpath\Stargate\?@name.lsl
     @license: MIT
 
@@ -64,6 +64,9 @@ sendLocalCommand(string cmd, list params)
     llSay(channel_number, cmd);
 }
 
+integer dieRing = FALSE;
+integer isFinished = FALSE;
+
 start()
 {
     start_pos = llGetPos();
@@ -76,21 +79,25 @@ start()
     llSleep(0.2);
 }
 
-integer dieRing = 0;
+finish()
+{
+    if (!isFinished) {
+        llTriggerSound("e6a27da5-6eed-40e7-b57b-e99ac9eb42fe", 1.0);
+        llSetPos(start_pos);
+    }
+
+    isFinished = TRUE;
+
+    if (dieRing) {
+        llSleep(0.2);
+        llDie();
+    }
+}
 
 setTimer(integer die)
 {
     dieRing = die;
     llSetTimerEvent((ring_total_time / ring_count) * (ring_count - ring_number + 1));//* +1 for not be 0
-}
-
-finish() {
-    llTriggerSound("e6a27da5-6eed-40e7-b57b-e99ac9eb42fe",1.0);
-    llSetPos(start_pos);
-    if (dieRing) {
-        llSleep(0.2);
-        llDie();
-    }
 }
 
 default
@@ -102,7 +109,6 @@ default
             llSetObjectDesc((string)param); //* because not saved to `listen` scope :(
             //start();
             llResetScript();
-            setTimer(TRUE);
         }
     }
 
@@ -130,6 +136,7 @@ default
                 setTimer(TRUE);
             else
             {
+                setTimer(FALSE);
                 sendCommandTo(owner, "ready", [(string)ring_number]); //* Gate will answer teleport
             }
         }
@@ -146,9 +153,10 @@ default
         {
             osTeleportAgent(agent, toPos, toLookAt);
         }
-        finish();
-        //*
-        llDie();
+        if (isFinished)
+            llDie();
+        else
+            setTimer(TRUE);
     }
 
     listen (integer channel, string name, key id, string message)
@@ -171,20 +179,16 @@ default
                         if (number == ring_number)
                         {
                             agent = llList2Key(cmdList, 4);
-                            if (!agent)
-                                setTimer(TRUE);
-                            else
+                            if (agent)
                             {
                                 toRegion = llList2String(cmdList, 1);
                                 toPos = llList2Vector(cmdList, 2 );
                                 toLookAt = llList2Vector(cmdList, 3);
-                                if (1==2) {
-                                //if ((agent == llGetOwner()) || (llGetPermissions() & PERMISSION_TELEPORT)) {
+                                //if (1==2) {
+                                if ((agent == llGetOwner()) || (llGetPermissions() & PERMISSION_TELEPORT)) {
                                     osTeleportAgent(agent, toPos, toLookAt);
-                                    setTimer(TRUE);
                                 } else {
                                     llRequestPermissions(agent, PERMISSION_TELEPORT);
-                                    setTimer(FALSE);
                                 }
                                 //osTeleportAgent(agent, toPos, toLookAt);
                                 //osTeleportAgent(agent, toRegion, toPos, toLookAt );
