@@ -3,8 +3,9 @@
     @description:
 
     @author: Zai Dium
-    @updated: "2022-05-27 22:33:46"
-    @revision: 77
+    @updated: "2022-05-28 00:20:29"
+    @revision: 83
+    @version: 2
     @localfile: ?defaultpath\Stargate\?@name.lsl
     @license: MIT
 
@@ -37,6 +38,8 @@ key dest_id; //* selected dest object ID
 integer dialog_channel;
 integer dialog_listen_id; //* dynamicly generated menu channel
 integer cur_page; //* current menu page
+
+vector old_face_color;
 
 listList(list l)
 {
@@ -147,6 +150,10 @@ integer nInternalRing = -1;
 
 start(integer number_detected)
 {
+    old_face_color = llGetColor(glow_face);
+    llSetColor(<255, 255, 255>, glow_face);
+    llSetPrimitiveParams([PRIM_GLOW, glow_face, 0.20, PRIM_FULLBRIGHT, glow_face, TRUE]); //* glow face
+    llTriggerSound(ring_sound, 1.0);
     llSetLinkPrimitiveParams(nInternalRing, [PRIM_OMEGA, llRot2Up(llGetLocalRot()), PI, 1.0]);
 
     llTriggerSound(ring_start_sound,1.0);
@@ -183,6 +190,7 @@ finish()
     llSetLinkPrimitiveParams(nInternalRing, [PRIM_ROTATION, llEuler2Rot(<0, 0, 0>)]);
 
     llSetLinkAlpha(2,1.0,ALL_SIDES); //* show main ring base
+    llSetColor(old_face_color, glow_face);
     llSetPrimitiveParams([PRIM_GLOW, glow_face, 0.00, PRIM_FULLBRIGHT, glow_face, FALSE]); //* deactivate glow
     dest_id = NULL_KEY;
     //avatars_list = []; nop
@@ -204,6 +212,8 @@ default
 
     state_entry()
     {
+        old_face_color = llGetColor(glow_face);
+
         list box = llGetBoundingBox(llGetKey());
         vector size = llList2Vector(box, 1) * llGetRot() - llList2Vector(box, 0) * llGetRot();
         sensor_range = ((size.x + size.y) / 2) / 2; //* avarage / 2
@@ -293,8 +303,6 @@ default
                 if (id != llGetKey())
                 { //*not self s
                     dest_id = NULL_KEY;
-                    llSetPrimitiveParams([PRIM_GLOW, glow_face, 0.20, PRIM_FULLBRIGHT, glow_face, TRUE]); //* glow face
-                    llTriggerSound(ring_sound, 1.0);
                     start(0);
                 }
             }

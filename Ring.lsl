@@ -3,8 +3,8 @@
     @description:
 
     @author: Zai Dium
-    @updated: "2022-05-27 22:50:33"
-    @revision: 56
+    @updated: "2022-05-27 23:19:42"
+    @revision: 58
     @localfile: ?defaultpath\Stargate\?@name.lsl
     @license: MIT
 
@@ -184,9 +184,10 @@ default
                                 toRegion = llList2String(cmdList, 1);
                                 toPos = llList2Vector(cmdList, 2 );
                                 toLookAt = llList2Vector(cmdList, 3);
-                                //if (1==2) {
-                                if ((agent == llGetOwner()) || (llGetPermissions() & PERMISSION_TELEPORT)) {
+                                if ((agent == llGetOwner()) || (llGetPermissions() & PERMISSION_TELEPORT))
+                                {
                                     osTeleportAgent(agent, toPos, toLookAt);
+                                    setTimer(TRUE);
                                 } else {
                                     llRequestPermissions(agent, PERMISSION_TELEPORT);
                                 }
