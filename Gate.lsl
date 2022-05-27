@@ -1,11 +1,12 @@
 /**
-    @name: Gate.lsl
+    @name: Gate
     @description:
 
     @author: Zai Dium
-    @updated: 2022-05-18
-    @revision: 5
-    @localfile: ?defaultpath\Stargate\?name
+    @updated: "2022-05-27 21:04:28"
+    @revision: 71
+    @localfile: ?defaultpath\Stargate\?@name.lsl
+    @localfile: ?defaultpath\Stargate\?@name-?filedatetime.lsl
     @license: MIT
 
     @ref:
@@ -23,7 +24,7 @@ integer channel_private_number = 1;
 integer glow_face = 2;
 integer ring_count = 5; //* amount of rings to rez and teleport
 float ring_total_time = 5;
-float sensor_range = 5;
+float sensor_range = 4;
 string ring_start_sound = "289b4a8d-5a9a-4cc3-8077-3d3e5b08bb8c";
 key ring_sound = ""; //* UUID of ring sound
 
@@ -129,8 +130,27 @@ removeGate(key id){
     }
 }
 
+//* case sensitive
+integer getPrimNumber(string name)
+{
+    integer c = llGetNumberOfPrims();
+    integer i = 1; //based on 1
+    while(i <= c)
+    {
+        if (llGetLinkName(i) == name) // llGetLinkName based on 1
+            return i;
+        i++;
+    }
+    llOwnerSay("Could not find " + name);
+    return -1;
+}
+
+integer nInternalRing = -1;
+
 start()
 {
+    llSetLinkPrimitiveParams(nInternalRing, [PRIM_OMEGA, llRot2Up(llGetLocalRot()), PI, 1.0]);
+
     llTriggerSound(ring_start_sound,1.0);
     vector pos = llGetPos() - <0,0,0.1>;
     integer ringNumber;
@@ -143,6 +163,7 @@ start()
             n = ringNumber;
         llRezObject("Ring", pos, ZERO_VECTOR, ZERO_ROTATION, n);
     }
+    llSetTimerEvent(ring_total_time);
 }
 
 teleport(key id, integer index)
@@ -158,6 +179,11 @@ teleport(key id, integer index)
 
 finish()
 {
+    llSetLinkPrimitiveParams(nInternalRing, [PRIM_OMEGA, <0, 0, 0>, PI, 1.0]);
+    //* we need this trick to reset rotation
+    llSetLinkPrimitiveParams(nInternalRing, [PRIM_ROTATION, llEuler2Rot(<0, 0, -180 * DEG_TO_RAD>)]);
+    llSetLinkPrimitiveParams(nInternalRing, [PRIM_ROTATION, llEuler2Rot(<0, 0, 0>)]);
+
     llSetLinkAlpha(2,1.0,ALL_SIDES); //* show main ring base
     llSetPrimitiveParams([PRIM_GLOW, glow_face, 0.00, PRIM_FULLBRIGHT, glow_face, FALSE]); //* deactivate glow
     dest_id = NULL_KEY;
@@ -180,6 +206,13 @@ default
 
     state_entry()
     {
+        list box = llGetBoundingBox(llGetKey());
+        vector size = llList2Vector(box, 1) * llGetRot() - llList2Vector(box, 0) * llGetRot();
+        sensor_range = ((size.x + size.y) / 2) / 2; //* avarage / 2
+        llOwnerSay(sensor_range);
+
+        nInternalRing = getPrimNumber("InternalRing");
+        llSetLinkPrimitiveParams(nInternalRing, [PRIM_OMEGA, <0, 0, 0>, 0, 1.0]);
         if (channel_number == 0)
           channel_number = (((integer)("0x"+llGetSubString((string)llGetOwner(),-8,-1)) & 0x3FFFFFFF) ^ 0xBFFFFFFF ) + channel_private_number;
         dialog_channel = -1 - (integer)("0x" + llGetSubString( (string) llGetKey(), -7, -1) );
@@ -268,7 +301,6 @@ default
                     llTriggerSound(ring_sound, 1.0);
                     temp = 1;
                     start();
-                    llSetTimerEvent(ring_total_time);
                 }
             }
         }

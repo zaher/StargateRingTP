@@ -1,11 +1,11 @@
 /**
-    @name: Ring.lsl
+    @name: Ring
     @description:
 
     @author: Zai Dium
-    @updated: 2022-05-18
-    @revision: 5
-    @localfile: ?defaultpath\Stargate\?basename
+    @updated: "2022-05-27 20:04:51"
+    @revision: 15
+    @localfile: ?defaultpath\Stargate\?@name.lsl
     @license: MIT
 
     @ref:
@@ -32,6 +32,7 @@ string toRegion;
 vector toPos;
 vector toLookAt;
 key agent;
+key owner;
 
 sendCommandTo(key id, string cmd, list params)
 {
@@ -114,10 +115,11 @@ default
 
             llListen(channel_number,"","","");
             start();
+
             if (temp != 0)
                 llSetTimerEvent((ring_total_time / ring_count) * (ring_count - ring_number + 1));//* +1 for not be 0
             else {
-                sendLocalCommand("ready", [(string)ring_number]);
+                sendCommandTo(owner, "ready", [(string)ring_number]);
             }
         }
     }
@@ -145,6 +147,9 @@ default
                 list cmdList = llParseString2List(message,[";"],[""]);
                 string cmd = llList2String(cmdList,0);
                 cmdList = llDeleteSubList(cmdList, 0, 0);
+                if (cmd == "setup") {
+                    owner = id;
+                }
                 if (cmd == "teleport")
                 {
                     if (temp == 0) {
@@ -152,11 +157,12 @@ default
                         if (number == ring_number) {
                             agent = llList2Key(cmdList, 4);
                             if (agent) {
-                                llOwnerSay("teleport: " + (string)agent);
+                                //llOwnerSay("teleport: " + (string)agent);
                                 toRegion = llList2String(cmdList, 1);
                                 toPos = llList2Vector(cmdList, 2 );
                                 toLookAt = llList2Vector(cmdList, 3);
-                                if (agent == llGetOwner()) {
+								//if (agent == llGetOwner()) {
+                                if (llGetPermissions() & PERMISSION_TELEPORT) {
                                     osTeleportAgent(agent, toPos, toLookAt);
                                     finish();
                                 } else
