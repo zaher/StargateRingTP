@@ -3,8 +3,8 @@
     @description:
 
     @author: Zai Dium
-    @updated: "2022-05-27 21:33:25"
-    @revision: 30
+    @updated: "2022-05-27 22:05:06"
+    @revision: 32
     @localfile: ?defaultpath\Stargate\?@name.lsl
     @license: MIT
 
@@ -87,9 +87,10 @@ setTimer(integer die)
 finish() {
     llTriggerSound("e6a27da5-6eed-40e7-b57b-e99ac9eb42fe",1.0);
     llSetPos(start_pos);
-    llSleep(0.2);
-    if (dieRing)
+    if (dieRing) {
+        llSleep(0.2);
         llDie();
+    }
 }
 
 default
@@ -125,7 +126,7 @@ default
             llListen(channel_number,"","","");
             start();
 
-            if (temp != 0)
+            if (temp)
                 setTimer(TRUE);
             else
             {
@@ -167,14 +168,18 @@ default
                     //* only not temp rings
                     if (temp == 0) {
                         integer number = llList2Integer(cmdList, 0);
-                        if (number == ring_number) {
+                        if (number == ring_number)
+                        {
                             agent = llList2Key(cmdList, 4);
-                            if (agent) {
-                                //llOwnerSay("teleport: " + (string)agent);
+                            if (!agent)
+                                setTimer(TRUE);
+                            else
+                            {
                                 toRegion = llList2String(cmdList, 1);
                                 toPos = llList2Vector(cmdList, 2 );
                                 toLookAt = llList2Vector(cmdList, 3);
-                                if ((agent == llGetOwner()) || (llGetPermissions() & PERMISSION_TELEPORT)) {
+                                if (1==2) {
+                                //if ((agent == llGetOwner()) || (llGetPermissions() & PERMISSION_TELEPORT)) {
                                     osTeleportAgent(agent, toPos, toLookAt);
                                     setTimer(TRUE);
                                 } else {
@@ -183,10 +188,6 @@ default
                                 }
                                 //osTeleportAgent(agent, toPos, toLookAt);
                                 //osTeleportAgent(agent, toRegion, toPos, toLookAt );
-                            }
-                            else
-                            {
-                                 setTimer(TRUE);
                             }
                         }
                     }
