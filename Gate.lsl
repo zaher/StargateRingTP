@@ -3,8 +3,8 @@
     @description:
 
     @author: Zai Dium
-    @updated: "2022-05-27 21:04:28"
-    @revision: 71
+    @updated: "2022-05-27 21:15:23"
+    @revision: 73
     @localfile: ?defaultpath\Stargate\?@name.lsl
     @localfile: ?defaultpath\Stargate\?@name-?filedatetime.lsl
     @license: MIT
@@ -24,7 +24,7 @@ integer channel_private_number = 1;
 integer glow_face = 2;
 integer ring_count = 5; //* amount of rings to rez and teleport
 float ring_total_time = 5;
-float sensor_range = 4;
+float sensor_range = 2;
 string ring_start_sound = "289b4a8d-5a9a-4cc3-8077-3d3e5b08bb8c";
 key ring_sound = ""; //* UUID of ring sound
 
@@ -209,7 +209,6 @@ default
         list box = llGetBoundingBox(llGetKey());
         vector size = llList2Vector(box, 1) * llGetRot() - llList2Vector(box, 0) * llGetRot();
         sensor_range = ((size.x + size.y) / 2) / 2; //* avarage / 2
-        llOwnerSay(sensor_range);
 
         nInternalRing = getPrimNumber("InternalRing");
         llSetLinkPrimitiveParams(nInternalRing, [PRIM_OMEGA, <0, 0, 0>, 0, 1.0]);
