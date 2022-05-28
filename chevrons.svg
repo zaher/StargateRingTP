@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="500"
+   height="500"
+   viewBox="0 0 132.29166 132.29167"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   sodipodi:docname="Chevrons.svg"
+   inkscape:export-filename="D:\lab\opensim\projects\Stargate\Chevrons.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#383838"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     units="px"
+     height="500px"
+     inkscape:zoom="1.0574204"
+     inkscape:cx="252.02843"
+     inkscape:cy="280.87221"
+     inkscape:window-width="1920"
+     inkscape:window-height="1027"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="rect850"
+       style="fill:#ffffff;fill-rule:evenodd;stroke:none;stroke-width:0.598821;stroke-linejoin:round;stop-color:#000000;fill-opacity:1"
+       d="M 20.060969,13.187851 H 37.418685 V 119.16537 H 20.060969 Z"
+       sodipodi:nodetypes="ccccc" />
+    <path
+       id="rect850-4"
+       style="fill:#ffffff;fill-rule:evenodd;stroke:none;stroke-width:0.598821;stroke-linejoin:round;stop-color:#000000;fill-opacity:1"
+       d="M 57.466979,13.126293 H 74.824695 V 119.10381 H 57.466979 Z"
+       sodipodi:nodetypes="ccccc" />
+    <path
+       id="rect850-2"
+       style="fill:#ffffff;fill-rule:evenodd;stroke:none;stroke-width:0.598821;stroke-linejoin:round;stop-color:#000000;fill-opacity:1"
+       d="M 94.872989,13.126293 H 112.23071 V 119.10381 H 94.872989 Z"
+       sodipodi:nodetypes="ccccc" />
+  </g>
+</svg>

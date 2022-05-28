@@ -3,8 +3,8 @@
     @description:
 
     @author: Zai Dium
-    @updated: "2022-05-28 00:20:29"
-    @revision: 83
+    @updated: "2022-05-28 17:18:17"
+    @revision: 85
     @version: 2
     @localfile: ?defaultpath\Stargate\?@name.lsl
     @license: MIT
@@ -21,7 +21,7 @@ integer channel_private_number = 1;
 
 //*
 
-integer glow_face = 2;
+integer glow_face = 0;
 integer ring_count = 5; //* amount of rings to rez and teleport
 float ring_total_time = 5;
 float sensor_range = 2;
