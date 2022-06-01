@@ -3,8 +3,8 @@
     @description:
 
     @author: Zai Dium
-    @updated: "2022-05-28 17:18:17"
-    @revision: 85
+    @updated: "2022-06-01 21:46:05"
+    @revision: 106
     @version: 2
     @localfile: ?defaultpath\Stargate\?@name.lsl
     @license: MIT
@@ -15,7 +15,7 @@
 */
 
 //* User Setting
-integer owner_only = TRUE;
+//integer owner_only = TRUE;
 integer channel_number = 0; //* Set it to 0 to autogenerate it
 integer channel_private_number = 1;
 
@@ -38,6 +38,8 @@ key dest_id; //* selected dest object ID
 integer dialog_channel;
 integer dialog_listen_id; //* dynamicly generated menu channel
 integer cur_page; //* current menu page
+
+key update_id;
 
 vector old_face_color;
 
@@ -101,34 +103,6 @@ sendLocalCommand(string cmd, list params)
         cmd = cmd + ";" + llList2String(params, i);
     }
     llSay(channel_number, cmd);
-}
-
-addGate(key id)
-{
-    if (llListFindList(gates_id_list,[id]) == -1)
-    {
-        gates_id_list += id; //* add ring to list
-        string name = llList2String(llGetObjectDetails(id,[OBJECT_DESC]), 0);
-        if (name == "")
-            name = llList2String(llGetObjectDetails(id,[OBJECT_NAME]), 0);
-        if (name == "")
-            llOwnerSay("This id have no name: " + (string)id);
-        //llOwnerSay("add: " + name);
-        gates_name_list += name;
-    }
-}
-
-removeGate(key id){
-    if (llListFindList(gates_id_list,[ id ]) == -1)
-    {
-        list tempList;
-        integer index = llListFindList(gates_id_list,[id]);
-        if (index != -1)
-        {
-            tempList = llDeleteSubList(gates_id_list,index,index);
-        }
-        gates_id_list = tempList;
-    }
 }
 
 //* case sensitive
@@ -201,6 +175,40 @@ clear(){
     gates_name_list = [];
 }
 
+update(){
+    clear();
+    update_id = llGenerateKey();
+    sendCommand("update", [update_id]);
+}
+
+addGate(key id)
+{
+    if (llListFindList(gates_id_list,[id]) == -1)
+    {
+        gates_id_list += id; //* add ring to list
+        string name = llList2String(llGetObjectDetails(id,[OBJECT_DESC]), 0);
+        if (name == "")
+            name = llList2String(llGetObjectDetails(id,[OBJECT_NAME]), 0);
+        if (name == "")
+            llOwnerSay("This id have no name: " + (string)id);
+        //llOwnerSay("add: " + name);
+        gates_name_list += name;
+    }
+}
+
+removeGate(key id){
+    if (llListFindList(gates_id_list,[ id ]) == -1)
+    {
+        list tempList;
+        integer index = llListFindList(gates_id_list,[id]);
+        if (index != -1)
+        {
+            tempList = llDeleteSubList(gates_id_list,index,index);
+        }
+        gates_id_list = tempList;
+    }
+}
+
 default
 {
     changed (integer change)
@@ -224,7 +232,7 @@ default
           channel_number = (((integer)("0x"+llGetSubString((string)llGetOwner(),-8,-1)) & 0x3FFFFFFF) ^ 0xBFFFFFFF ) + channel_private_number;
         dialog_channel = -1 - (integer)("0x" + llGetSubString( (string) llGetKey(), -7, -1) );
         llListen(channel_number,"","","");
-        sendCommand("update", []);
+        update();
     }
 
     on_rez(integer start_param )
@@ -234,7 +242,6 @@ default
 
     touch_start(integer num_detected)
     {
-        sendCommand("update", []);
         showDialog(llDetectedKey(0));
     }
 
@@ -287,11 +294,11 @@ default
             }
             //* gates
             if (cmd == "update") {
-                addGate(id);
-                sendCommand("add", []); //* send pong reply (ring sync)
-            }
-            else if (message == "add")
-            {
+                if (update_id != llList2Key(cmdList, 0)){
+                    clear();
+                    update_id = llList2Key(cmdList, 0);
+                    sendCommand("update", [update_id]); //* send pong reply (ring sync)
+                }
                 addGate(id);
             }
             else if (message == "remove")
@@ -326,8 +333,7 @@ default
                 showDialog(id);
             }
             else if (message == "Refresh") {
-                clear();
-                sendCommand("update", []);
+                update();
                 finish();
             }
             else if (button_index != -1)
