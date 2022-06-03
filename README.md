@@ -36,7 +36,7 @@ https://github.com/zaher/StargateRingTP
 
 ### Syntax ###
 
-I use /*  or  //*  as documentation comment, normal comment is not a documentation, my miniedit highlight it
+I use /**  or  //*  as documentation comment, normal comment is not a documentation, my miniedit highlight it correctly.
 
 ### Thanks ###
 
