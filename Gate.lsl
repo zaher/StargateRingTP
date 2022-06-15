@@ -3,8 +3,8 @@
     @description:
 
     @author: Zai Dium
-    @updated: "2022-06-01 21:46:05"
-    @revision: 106
+    @updated: "2022-06-15 21:47:58"
+    @revision: 124
     @version: 2
     @localfile: ?defaultpath\Stargate\?@name.lsl
     @license: MIT
@@ -16,19 +16,23 @@
 
 //* User Setting
 //integer owner_only = TRUE;
+string soundName = "GateSound";
 integer channel_number = 0; //* Set it to 0 to autogenerate it
 integer channel_private_number = 1;
 
+string defaultSound = "289b4a8d-5a9a-4cc3-8077-3d3e5b08bb8c";
+//string ring_start_sound = " ddb8a14d-624a-4da2-861c-8feedd9c9195"; //*
 //*
 
 integer glow_face = 0;
 integer ring_count = 5; //* amount of rings to rez and teleport
 float ring_total_time = 5;
 float sensor_range = 2;
-string ring_start_sound = "289b4a8d-5a9a-4cc3-8077-3d3e5b08bb8c";
-key ring_sound = ""; //* UUID of ring sound
+
 
 list cmd_list = [ "<--", "Refresh", "-->" ]; //* general navigation
+
+key soundid;
 
 list gates_name_list = []; //* gate rings list
 list gates_id_list = []; //* gate rings keys list
@@ -120,17 +124,23 @@ integer getPrimNumber(string name)
     return -1;
 }
 
+sound(){
+    llTriggerSound(soundid, 1.0);
+}
+
 integer nInternalRing = -1;
+integer started = FALSE;
 
 start(integer number_detected)
 {
     old_face_color = llGetColor(glow_face);
+    started = TRUE;
     llSetColor(<255, 255, 255>, glow_face);
     llSetPrimitiveParams([PRIM_GLOW, glow_face, 0.20, PRIM_FULLBRIGHT, glow_face, TRUE]); //* glow face
-    llTriggerSound(ring_sound, 1.0);
+
     llSetLinkPrimitiveParams(nInternalRing, [PRIM_OMEGA, llRot2Up(llGetLocalRot()), PI, 1.0]);
 
-    llTriggerSound(ring_start_sound,1.0);
+    sound();
     vector pos = llGetPos() - <0,0,0.1>;
     integer ringNumber;
     for (ringNumber = 1; ringNumber <= ring_count; ringNumber++) {
@@ -164,10 +174,13 @@ finish()
     llSetLinkPrimitiveParams(nInternalRing, [PRIM_ROTATION, llEuler2Rot(<0, 0, 0>)]);
 
     llSetLinkAlpha(2,1.0,ALL_SIDES); //* show main ring base
-    llSetColor(old_face_color, glow_face);
+    if (started) {
+        llSetColor(old_face_color, glow_face);
+    }
     llSetPrimitiveParams([PRIM_GLOW, glow_face, 0.00, PRIM_FULLBRIGHT, glow_face, FALSE]); //* deactivate glow
     dest_id = NULL_KEY;
     //avatars_list = []; nop
+    started = FALSE;
 }
 
 clear(){
@@ -221,6 +234,10 @@ default
     state_entry()
     {
         old_face_color = llGetColor(glow_face);
+
+        soundid = llGetInventoryKey(soundName);
+        if (soundid == NULL_KEY)
+            soundid = defaultSound;
 
         list box = llGetBoundingBox(llGetKey());
         vector size = llList2Vector(box, 1) * llGetRot() - llList2Vector(box, 0) * llGetRot();
@@ -340,7 +357,6 @@ default
             {
                 dest_id = (key)llList2String(gates_id_list, button_index); //* id of destination
                 llSetPrimitiveParams([PRIM_GLOW, glow_face, 0.20, PRIM_FULLBRIGHT, glow_face, TRUE]); //* activate glow
-                llTriggerSound(ring_sound, 1.0);
                 llSensor("", NULL_KEY, AGENT, sensor_range, PI);
                 llSetTimerEvent(ring_total_time);
            }

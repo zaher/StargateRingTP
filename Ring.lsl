@@ -3,8 +3,8 @@
     @description:
 
     @author: Zai Dium
-    @updated: "2022-05-27 23:19:42"
-    @revision: 58
+    @updated: "2022-06-15 21:30:45"
+    @revision: 72
     @localfile: ?defaultpath\Stargate\?@name.lsl
     @license: MIT
 
@@ -15,10 +15,13 @@
 
 //* User Setting
 integer owner_only = TRUE;
+string ringSound = "RingSound";
+
 integer channel_number = 0; //* Set it to 0 to autogenerate it
 integer channel_private_number = 1;
 
 //*
+string ringDefaultSound = "e6a27da5-6eed-40e7-b57b-e99ac9eb42fe";
 
 float  ring_total_time = 5;
 integer ring_count = 5;
@@ -27,6 +30,8 @@ float ring_height = 0.5;
 vector start_pos; //* starting pos
 integer ring_number = 0; //* ring number
 integer temp = 0; //* if enabled do not process teleports
+
+key soundid;
 
 string toRegion;
 vector toPos;
@@ -82,7 +87,7 @@ start()
 finish()
 {
     if (!isFinished) {
-        llTriggerSound("e6a27da5-6eed-40e7-b57b-e99ac9eb42fe", 1.0);
+        sound();
         llSetPos(start_pos);
     }
 
@@ -100,11 +105,16 @@ setTimer(integer die)
     llSetTimerEvent((ring_total_time / ring_count) * (ring_count - ring_number + 1));//* +1 for not be 0
 }
 
+sound(){
+    llTriggerSound(soundid, 1.0);
+}
+
 default
 {
     on_rez(integer param)
     {
-        llTriggerSound("e6a27da5-6eed-40e7-b57b-e99ac9eb42fe", 1.0);
+        sound();
+        llTargetOmega(llRot2Up(llGetLocalRot()), PI, 2.0);
         if (param != 0) {
             llSetObjectDesc((string)param); //* because not saved to `listen` scope :(
             //start();
@@ -112,9 +122,18 @@ default
         }
     }
 
+    touch_start(integer num_detected)
+    {
+         sound();
+    }
+
     state_entry()
     {
         llVolumeDetect(TRUE);
+
+        soundid = llGetInventoryKey(ringSound);
+        if (soundid == NULL_KEY)
+            soundid = ringDefaultSound;
 
         ring_number = (integer)llGetObjectDesc();
         if (ring_number < 0) {
