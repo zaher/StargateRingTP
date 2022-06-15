@@ -3,8 +3,8 @@
     @description:
 
     @author: Zai Dium
-    @updated: "2022-06-15 21:47:58"
-    @revision: 124
+    @updated: "2022-06-15 22:57:26"
+    @revision: 143
     @version: 2
     @localfile: ?defaultpath\Stargate\?@name.lsl
     @license: MIT
@@ -133,13 +133,12 @@ integer started = FALSE;
 
 start(integer number_detected)
 {
+    llSetLinkPrimitiveParams(nInternalRing, [PRIM_OMEGA, llRot2Up(llGetLocalRot()), PI, 1.0]);
+
     old_face_color = llGetColor(glow_face);
     started = TRUE;
     llSetColor(<255, 255, 255>, glow_face);
     llSetPrimitiveParams([PRIM_GLOW, glow_face, 0.20, PRIM_FULLBRIGHT, glow_face, TRUE]); //* glow face
-
-    llSetLinkPrimitiveParams(nInternalRing, [PRIM_OMEGA, llRot2Up(llGetLocalRot()), PI, 1.0]);
-
     sound();
     vector pos = llGetPos() - <0,0,0.1>;
     integer ringNumber;
@@ -244,6 +243,8 @@ default
         sensor_range = ((size.x + size.y) / 2) / 2; //* avarage / 2
 
         nInternalRing = getPrimNumber("InternalRing");
+        if (!nInternalRing)
+            llOwnerSay("Could not find InternalRing");
         llSetLinkPrimitiveParams(nInternalRing, [PRIM_OMEGA, <0, 0, 0>, 0, 1.0]);
         if (channel_number == 0)
           channel_number = (((integer)("0x"+llGetSubString((string)llGetOwner(),-8,-1)) & 0x3FFFFFFF) ^ 0xBFFFFFFF ) + channel_private_number;
@@ -356,7 +357,6 @@ default
             else if (button_index != -1)
             {
                 dest_id = (key)llList2String(gates_id_list, button_index); //* id of destination
-                llSetPrimitiveParams([PRIM_GLOW, glow_face, 0.20, PRIM_FULLBRIGHT, glow_face, TRUE]); //* activate glow
                 llSensor("", NULL_KEY, AGENT, sensor_range, PI);
                 llSetTimerEvent(ring_total_time);
            }
