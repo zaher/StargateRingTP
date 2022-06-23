@@ -13,6 +13,7 @@ Works only in one region but i will add cross regions by saving LM in notecard [
 
 Easty, rez it , change the description, after rezzing all rings, click `Refresh` in menu, enjoy.
 You need refresh button only at then end of setup, or after renaming it in description.
+If you like, put GateSound sound file in Gate prim for starting, and put RingSound file in Ring object inside the gate, or it use default sounds
 
 ### Buildup ###
 

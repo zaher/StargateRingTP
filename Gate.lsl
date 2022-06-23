@@ -3,8 +3,8 @@
     @description:
 
     @author: Zai Dium
-    @updated: "2022-06-15 22:57:26"
-    @revision: 143
+    @updated: "2022-06-23 21:21:37"
+    @revision: 136
     @version: 2
     @localfile: ?defaultpath\Stargate\?@name.lsl
     @license: MIT
@@ -39,7 +39,7 @@ list gates_id_list = []; //* gate rings keys list
 list avatars_list = []; //* hold temp list of avatar keys for teleporting
 key dest_id; //* selected dest object ID
 
-integer dialog_channel;
+integer dialog_channel = -1;
 integer dialog_listen_id; //* dynamicly generated menu channel
 integer cur_page; //* current menu page
 
@@ -74,6 +74,7 @@ list getCommands(integer page)
 }
 
 showDialog(key toucher_id) {
+    dialog_channel = -1 - (integer)("0x" + llGetSubString( (string) llGetKey(), -7, -1) );
     llDialog(toucher_id, "Ring Gate", getCommands(cur_page), dialog_channel);
     llListenRemove(dialog_listen_id);
     dialog_listen_id = llListen(dialog_channel, "", toucher_id, "");
@@ -225,7 +226,7 @@ default
 {
     changed (integer change)
     {
-        if (change & CHANGED_OWNER) {
+        if ((change & CHANGED_REGION_START) || (change & CHANGED_OWNER)) {
             llResetScript();
         }
     }
@@ -248,7 +249,6 @@ default
         llSetLinkPrimitiveParams(nInternalRing, [PRIM_OMEGA, <0, 0, 0>, 0, 1.0]);
         if (channel_number == 0)
           channel_number = (((integer)("0x"+llGetSubString((string)llGetOwner(),-8,-1)) & 0x3FFFFFFF) ^ 0xBFFFFFFF ) + channel_private_number;
-        dialog_channel = -1 - (integer)("0x" + llGetSubString( (string) llGetKey(), -7, -1) );
         llListen(channel_number,"","","");
         update();
     }
@@ -332,7 +332,7 @@ default
                 }
             }
         }
-        else //* Dialog
+        else if (channel == dialog_channel) //* Dialog
         {
             llListenRemove(dialog_listen_id);
             integer button_index = llListFindList(gates_name_list, [message]);
